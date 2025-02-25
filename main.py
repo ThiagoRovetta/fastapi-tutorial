@@ -1,6 +1,7 @@
 from enum import Enum
+from typing import Annotated
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 
 
@@ -141,3 +142,43 @@ async def update_item(item_id: int, item: Item, q: str | None = None):
     if q:
         result.update({"q": q})
     return result
+
+
+# use Annotated to add additional validation to query parameter
+# @app.get("/items/")
+# async def read_items(
+#     q: Annotated[
+#         str | None,
+#         Query(
+#             title="Query string",
+#             description="Query string for the items to search in the database that have a good match",
+#             min_length=3,
+#             max_length=50,
+#             pattern="^fixedquery$",
+#         ),
+#     ] = None
+# ):
+#     results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+#     if q:
+#         results.update({"q": q})
+#     return results
+
+
+# query parameters with multiple values allowed
+# to declare a query parameter with a type of list, like in the example below
+# we must use Query, otherwise it would be interpreted as a request body
+# @app.get("/items/")
+# async def read_items(
+#     q: Annotated[list[str] | None, Query()] = None
+# ):
+#     query_items = {"q": q}
+#     return query_items
+
+
+# create an alias to match the query parameter
+@app.get("/items/")
+async def read_items(q: Annotated[str | None, Query(alias="item-query")] = None):
+    results = {"items": [{"item_id": "Foo"}, {"item_id": "Bar"}]}
+    if q:
+        results.update({"q": q})
+    return results
